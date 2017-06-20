@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+        <!-- Required meta tags always come first -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Cache Server admin</title>
+
+        <!-- Angular -->
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.js"></script>
+
+        <!-- JQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- CacheClient -->
+        <script type="text/javascript" src="CacheClient.js"></script>
+
+        <script>
+            var app = angular.module('app', []);
+            var mc;
+            
+            
+            app.controller("MainController", function($rootScope,$scope,$timeout,$http,$q){
+                    mc=this;
+                    this.$rootScope=$rootScope;
+                    this.$scope=$scope;
+                    this.$timeout=$timeout;
+                    this.$http=$http;
+                    this.$q=$q;
+                    
+                    
+                    
+                    this.generalError=function(response){
+                        //alert("Something wrong has happend with cache connection");
+                    };
+                    
+                    this.columnClass=function(){
+                        if (this.selectedBank===undefined){
+                            return "col-md-12";
+                        }else{
+                            return "col-md-6";
+                        }
+                    };
+                    
+                    this.bankStyle=function(bank){
+                        if (bank===this.selectedBank)
+                            return {"color":"blak"};
+                        else
+                            return {"color":"gray"}; 
+                    };
+                    
+                    console.log("+");
+                    this.cacheClient=new CacheClient("http://localhost:5000",$http);
+                    
+                    console.log("*");
+                    
+                    this.cacheClient.getBanks(function(data){
+                        mc.banks=data;
+                    },this.generalError);
+                        
+                    
+                    this.selectBank=function(bank){
+                        this.selectedBank=bank;
+                        
+                        this.cacheClient.getElements(bank,function(data){
+                            mc.bankEntries=data;
+                        },this.generalError);
+                    };
+                    
+            });
+
+            $(document).ready(function() {
+            });
+
+        </script>
+
+    </head>
+
+    <body ng-app="app" ng-controller="MainController as mc" style="padding:1em">
+        <div class="row">
+            <div ng-class="mc.columnClass()" >
+                <div class="panel panel-default">
+                    <div class="panel-heading">Banks of cache</div>
+                    <div class="panel-body">
+                        <div ng-repeat="bank in mc.banks" ng-style="{{mc.bankStyle(bank)}}" ng-click="mc.selectBank(bank)" style="cursor:pointer">
+                            <i class="fa fa-database" aria-hidden="true"></i> {{bank}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div ng-class="mc.columnClass()" ng-if="mc.selectedBank">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Items</div>
+                    <div class="panel-body">
+                        <div ng-repeat="entry in mc.bankEntries" ng-style="{{mc.entryStyle(entry)}}" ng-click="mc.selectEntry(entry)" style="cursor:pointer">
+                            <i class="fa fa-file" aria-hidden="true"></i> {{entry}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+        </div>
+    </body>
+
+</html>
