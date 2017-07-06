@@ -8,7 +8,7 @@ app.controller("MainController", function($scope,$timeout,$http,$q){
     this.$timeout=$timeout;
     
     this.menu="connection";
-    this.url="http://"+location.host.split+"/api";
+    this.url="http://"+location.host+"/api";
     
     
     this.goToMenu=function(id){
